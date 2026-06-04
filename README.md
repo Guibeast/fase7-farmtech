@@ -26,7 +26,7 @@
 
 ## 📜 Descrição
 
-O projeto FarmTech Solutions — Fase 7 consolida em uma única dashboard Streamlit todas as entregas realizadas nas Fases 1 a 6 do PBL de Inteligência Artificial. O sistema integra o CRUD de culturas agrícolas (Fase 1), a simulação de sensores IoT ESP32 com DHT22, LDR e NPK (Fase 2), o banco de dados relacional com queries SQL (Fase 3), o modelo de Machine Learning Random Forest para predição de produtividade com R²=0.9703 (Fase 4), o serviço de alertas AWS SNS por e-mail e SMS (Fase 5) e a análise de saúde das plantações por visão computacional com OpenCV e YOLO (Fase 6).
+O projeto FarmTech Solutions — Fase 7 consolida em uma única dashboard Streamlit todas as entregas realizadas nas Fases 1 a 6 do PBL de Inteligência Artificial. O sistema integra o CRUD de culturas agrícolas (Fase 1), a simulação de sensores IoT ESP32 com DHT22, LDR e NPK (Fase 2), o banco de dados relacional com queries SQL (Fase 3), o modelo de Machine Learning Random Forest para predição de produtividade com R²=0.9703 (Fase 4), o serviço de alertas AWS SNS por e-mail e SMS (Fase 5) e a análise de saúde das plantações por visão computacional com YOLOv8-cls (Fase 6).
 
 O serviço de mensageria AWS SNS dispara alertas automáticos com ações corretivas sempre que leituras de sensor ultrapassam os thresholds configurados ou quando a análise visual da Fase 6 detecta pragas ou deficiências nutricionais, notificando os funcionários da fazenda diretamente por e-mail.
 
@@ -44,7 +44,7 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 - <b>assets</b>: Contém arquivos relacionados a elementos não-estruturados, como a logomarca da FIAP utilizada neste README.
 
-- <b>data</b>: Armazena os dados persistentes do sistema — `dados_agricolas.csv` (dataset do modelo ML da Fase 4), `farmtech_dados.json` (culturas cadastradas na Fase 1), `farmtech.db` (banco SQLite da Fase 3) e a pasta `fase6_amostras/` com imagens de teste para a visão computacional.
+- <b>data</b>: Armazena os dados do sistema — `dados_agricolas.csv` (dataset do modelo ML da Fase 4) e a pasta `fase6_amostras/` com imagens de teste para a visão computacional. Os arquivos `farmtech_dados.json` (culturas da Fase 1) e `farmtech.db` (banco SQLite da Fase 3) são gerados automaticamente em tempo de execução.
 
 - <b>docs</b>: Contém o arquivo `requirements.txt` com as dependências do projeto, conforme o padrão adotado nas entregas anteriores.
 
@@ -56,7 +56,9 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 - <b>analise_r</b>: Script `analise_culturas.R` com a análise estatística da Fase 1 sobre o dataset agrícola (gera gráficos e estatísticas em `analise_r/saidas/`).
 
-- <b>dashboard.py</b>: Ponto de entrada da aplicação. Execute com `streamlit run dashboard.py`.
+- <b>dashboard.py</b>: Ponto de entrada da interface gráfica. Execute com `streamlit run dashboard.py`.
+
+- <b>main.py</b>: Ponto de entrada por terminal. Dispara cada serviço das Fases 1 a 6 por linha de comando (menu interativo ou `python main.py <serviço>`).
 
 - <b>README.md</b>: Arquivo que serve como guia e explicação geral sobre o projeto (o mesmo que você está lendo agora).
 
@@ -73,13 +75,26 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
     pip install -r requirements.txt
     ```
 
-3.  **Execução**:
+3.  **Execução (interface gráfica)**:
     ```bash
     streamlit run dashboard.py
     ```
     Acesse em: `http://localhost:8501`
 
-4.  **Configuração AWS SNS (opcional)**:
+4.  **Execução (por terminal)**:
+    Conforme o enunciado, cada serviço também pode ser disparado por linha de comando, sem a interface gráfica:
+    ```bash
+    python main.py            # menu interativo
+    python main.py sensor     # leitura da estação ESP32 (Fase 2)
+    python main.py banco      # grava e consulta o banco SQLite (Fase 3)
+    python main.py ml         # predição de produtividade (Fase 4/5)
+    python main.py clima      # previsão Open-Meteo e recomendação de irrigação (Fase 1)
+    python main.py visao      # classificação de doença na folha de café (Fase 6)
+    python main.py alerta     # envia alerta de teste via AWS SNS (Fase 5)
+    ```
+    Serviços disponíveis: `culturas`, `sensor`, `banco`, `ml`, `clima`, `visao`, `alerta`, `dashboard`.
+
+5.  **Configuração AWS SNS (opcional)**:
     Crie o arquivo `.streamlit/secrets.toml` com as credenciais do AWS Learner Lab:
     ```toml
     AWS_ACCESS_KEY_ID = "sua_chave"
@@ -88,6 +103,21 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
     AWS_REGION = "us-east-1"
     SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:XXXX:farmtech-alertas"
     ```
+
+## 🖥 Dashboard — Abas e Integração das Fases
+
+O dashboard consolida as Fases 1 a 6 em cinco abas:
+
+| Aba | Fase(s) | Conteúdo |
+|-----|---------|----------|
+| 🌾 Visão Geral | 1–6 | Cards de status da fazenda, alertas ativos e disparo dos alertas via AWS SNS |
+| 🌱 Fase 1 — Culturas | 1 | CRUD de culturas (soja/café), cálculo de área e insumos, clima Open-Meteo e análise R |
+| 📡 Fase 2/3 — Sensores & BD | 2 e 3 | Leitura da estação ESP32 simulada, histórico e persistência no banco SQLite com queries SQL |
+| 🤖 Fase 4/5 — Machine Learning | 4 e 5 | Predição de produtividade (Random Forest), correlações e análise de custos AWS |
+| 👁️ Fase 6 — Visão Computacional | 6 | Classificação de doenças/pragas na folha de café com YOLOv8-cls + métricas de treino |
+
+O serviço de alertas AWS SNS (Fase 5) é acionável a partir da aba Visão Geral (alertas de sensor) e da aba Fase 6 (alerta visual), integrando as leituras das Fases 1/3 e a visão computacional da Fase 6.
+
 
 ## 📊 AWS SNS — Serviço de Alertas
 
@@ -167,7 +197,7 @@ erDiagram
 * 1.0.0 - 02/06/2026
     * Entrega da Fase 7: consolidação completa das Fases 1 a 6 em dashboard única com alertas AWS SNS.
 * 0.6.0 - 27/04/2026
-    * Fase 6: Visão Computacional com YOLO customizado e CNN do zero.
+    * Fase 6: Visão Computacional com YOLOv8-cls (transfer learning) classificando doenças e pragas em folha de café.
 * 0.5.0 - 2025
     * Fase 5: Cloud AWS, análise comparativa de custos e predição de safra (crop yield).
 * 0.4.0 - 2025

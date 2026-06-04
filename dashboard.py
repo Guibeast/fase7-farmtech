@@ -26,6 +26,46 @@ st.set_page_config(
     layout="wide",
 )
 
+st.markdown("""
+<style>
+  .block-container { padding-top: 2.4rem; padding-bottom: 3rem; max-width: 1180px; }
+
+  h1 { font-weight: 700; letter-spacing: -0.015em; }
+  h2, h3 { letter-spacing: -0.01em; }
+
+  /* Métricas como cards com acento agro */
+  [data-testid="stMetric"] {
+      background: #FFFFFF;
+      border: 1px solid #E2E8DA;
+      border-left: 4px solid #2E7D32;
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 2px rgba(20, 40, 15, 0.04);
+  }
+  [data-testid="stMetricLabel"] p { opacity: 0.78; font-weight: 500; }
+
+  /* Abas: mais legíveis, ativo em verde */
+  .stTabs [data-baseweb="tab-list"] { gap: 2px; }
+  .stTabs [data-baseweb="tab"] { font-weight: 600; padding: 8px 14px; }
+
+  /* Botões */
+  .stButton button { border-radius: 8px; font-weight: 600; }
+
+  /* Expanders como cartões suaves */
+  [data-testid="stExpander"] {
+      border: 1px solid #E2E8DA;
+      border-radius: 10px;
+  }
+
+  /* Divisórias mais discretas */
+  hr { margin: 0.7rem 0; border-color: #E2E8DA; }
+
+  /* Limpeza para apresentação */
+  #MainMenu { visibility: hidden; }
+  footer { visibility: hidden; }
+</style>
+""", unsafe_allow_html=True)
+
 CAMINHO_DADOS  = ROOT / 'data'   / 'dados_agricolas.csv'
 CAMINHO_MODELO = ROOT / 'models' / 'regressor_model.pkl'
 
