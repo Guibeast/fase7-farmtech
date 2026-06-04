@@ -1,0 +1,19 @@
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+*.pyo
+data/farmtech.db
+data/farmtech_dados.json
+.env
+
+# Contexto interno de desenvolvimento — NÃO publicar (conta AWS, nomes, RMs, paths)
+contexto_projeto7.md
+.claude/
+yolo26n.pt
+
+# Fase 6 — dataset e treino (pesados; modelo final fica versionado)
+data/fase6_cafe/
+models/fase6_runs/
+yolov8n-cls.pt
+!models/fase6_cafe.pt
+!models/fase6_metrics/
