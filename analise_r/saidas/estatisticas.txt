@@ -1,0 +1,43 @@
+FarmTech - Analise Estatistica (Fase 1)
+Amostras: 1000 
+
+== Resumo descritivo ==
+  Umidade_Solo      pH_Solo      Temperatura_Ambiente    Nivel_N      
+ Min.   :30.01   Min.   :4.001   Min.   :15.01        Min.   : 30.05  
+ 1st Qu.:45.25   1st Qu.:5.208   1st Qu.:21.96        1st Qu.: 92.14  
+ Median :60.91   Median :6.617   Median :27.97        Median :156.82  
+ Mean   :60.16   Mean   :6.519   Mean   :27.84        Mean   :160.18  
+ 3rd Qu.:74.89   3rd Qu.:7.757   3rd Qu.:34.06        3rd Qu.:230.54  
+ Max.   :89.96   Max.   :8.999   Max.   :39.99        Max.   :299.36  
+ Historico_Irrigacao_mm Produtividade_Esperada
+ Min.   : 0.1454        Min.   : 3979         
+ 1st Qu.:16.9507        1st Qu.: 7014         
+ Median :34.1831        Median : 7980         
+ Mean   :34.3627        Mean   : 7962         
+ 3rd Qu.:51.6818        3rd Qu.: 9009         
+ Max.   :69.9335        Max.   :10000         
+
+== Media / Mediana / Desvio-padrao ==
+                         Media Mediana  Desvio  Minimo   Maximo
+Umidade_Solo             60.16   60.91   17.05   30.01    89.96
+pH_Solo                   6.52    6.62    1.46    4.00     9.00
+Temperatura_Ambiente     27.84   27.97    7.11   15.01    39.99
+Nivel_N                 160.18  156.82   78.94   30.05   299.36
+Historico_Irrigacao_mm   34.36   34.18   20.05    0.15    69.93
+Produtividade_Esperada 7961.65 7980.01 1334.35 3979.28 10000.00
+
+== Matriz de correlacao ==
+                       Umidade_Solo pH_Solo Temperatura_Ambiente Nivel_N
+Umidade_Solo                  1.000   0.027                0.007   0.035
+pH_Solo                       0.027   1.000               -0.052   0.063
+Temperatura_Ambiente          0.007  -0.052                1.000   0.028
+Nivel_N                       0.035   0.063                0.028   1.000
+Historico_Irrigacao_mm        0.019  -0.025               -0.002  -0.037
+Produtividade_Esperada        0.048   0.060               -0.008   0.573
+                       Historico_Irrigacao_mm Produtividade_Esperada
+Umidade_Solo                            0.019                  0.048
+pH_Solo                                -0.025                  0.060
+Temperatura_Ambiente                   -0.002                 -0.008
+Nivel_N                                -0.037                  0.573
+Historico_Irrigacao_mm                  1.000                  0.262
+Produtividade_Esperada                  0.262                  1.000

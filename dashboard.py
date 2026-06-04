@@ -64,6 +64,27 @@ st.markdown("""
   /* Limpeza para apresentação */
   #MainMenu { visibility: hidden; }
   footer { visibility: hidden; }
+
+  /* Cabeçalho em banner */
+  .ft-header {
+      display: flex; align-items: center; gap: 24px;
+      padding: 20px 26px; margin: 0.2rem 0 1.1rem;
+      background: #FFFFFF;
+      border: 1px solid #E2E8DA; border-left: 6px solid #2E7D32;
+      border-radius: 14px; box-shadow: 0 2px 12px rgba(20, 40, 15, 0.06);
+  }
+  .ft-logo { width: 118px; height: auto; }
+  .ft-title {
+      font-size: 1.75rem; font-weight: 800; color: #1B2519;
+      letter-spacing: -0.02em; line-height: 1.1;
+  }
+  .ft-title span { color: #2E7D32; font-weight: 700; }
+  .ft-sub { color: #4A5746; font-size: 1.02rem; margin-top: 3px; }
+  .ft-chips { margin-top: 11px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .ft-chips .chip {
+      background: #EAF3E7; color: #2E7D32; border: 1px solid #D6E6CF;
+      padding: 3px 11px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+  }
 </style>
 """, unsafe_allow_html=True)
 
@@ -93,20 +114,25 @@ leitura_atual  = st.session_state.leitura_atual
 alertas_atuais = f2.verificar_alertas(leitura_atual)
 
 # ── Cabeçalho ────────────────────────────────────────────────────────────────
-col_logo, col_titulo = st.columns([1, 4])
-with col_logo:
-    logo_path = ROOT / 'assets' / 'logo-fiap.png'
-    if logo_path.exists():
-        logo_b64 = base64.b64encode(logo_path.read_bytes()).decode()
-        st.markdown(
-            f'<img src="data:image/png;base64,{logo_b64}" width="130" alt="FIAP">',
-            unsafe_allow_html=True,
-        )
-with col_titulo:
-    st.title("FarmTech Solutions — Sistema Integrado Fase 7")
-    st.caption("Grupo AI4Success | Turma 1TIAOR | FIAP")
+logo_path = ROOT / 'assets' / 'logo-fiap.png'
+logo_b64 = base64.b64encode(logo_path.read_bytes()).decode() if logo_path.exists() else ""
+logo_img = (f'<img src="data:image/png;base64,{logo_b64}" class="ft-logo" alt="FIAP">'
+            if logo_b64 else "")
 
-st.markdown("---")
+st.markdown(f"""
+<div class="ft-header">
+  {logo_img}
+  <div>
+    <div class="ft-title">FarmTech Solutions <span>· Fase 7</span></div>
+    <div class="ft-sub">Sistema Integrado de Gestão para o Agronegócio</div>
+    <div class="ft-chips">
+      <span class="chip">🌾 Grupo AI4Success</span>
+      <span class="chip">Turma 1TIAOR</span>
+      <span class="chip">FIAP</span>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🌾 Visão Geral",
@@ -251,7 +277,8 @@ with tab2:
 
     st.markdown("---")
     st.markdown("#### Clima & Irrigação (Open-Meteo)")
-    st.caption("Previsão meteorológica real cruzada com a umidade do solo para recomendar irrigação.")
+    st.caption("Previsão meteorológica real (temperatura, chuva, vento, UV, umidade do solo e "
+               "evapotranspiração ET0) cruzada com a umidade do solo dos sensores para recomendar irrigação.")
 
     cidade = st.selectbox("Localização da fazenda", list(fclima.CIDADES))
     lat, lon = fclima.CIDADES[cidade]
@@ -260,20 +287,40 @@ with tab2:
     if clima.get('erro'):
         st.warning(clima['erro'])
     else:
-        pc1, pc2, pc3 = st.columns(3)
-        pc1.metric("🌡️ Temperatura",   f"{clima['temperatura'] or 0:.1f}°C")
-        pc2.metric("💧 Umidade do ar",  f"{clima['umidade_ar'] or 0:.0f}%")
-        pc3.metric("🌧️ Chuva agora",    f"{clima['chuva_agora'] or 0:.1f} mm")
+        emoji, desc = fclima.descrever_tempo(clima['codigo_tempo'])
+        st.markdown(f"**{cidade}** &nbsp;·&nbsp; {emoji} {desc}")
+
+        r1 = st.columns(4)
+        r1[0].metric("🌡️ Temperatura", f"{clima['temperatura'] or 0:.1f}°C",
+                     f"sensação {clima['sensacao'] or 0:.1f}°C", delta_color="off")
+        r1[1].metric("💧 Umidade do ar", f"{clima['umidade_ar'] or 0:.0f}%")
+        r1[2].metric("🌧️ Chuva agora", f"{clima['chuva_agora'] or 0:.1f} mm")
+        r1[3].metric("🌬️ Vento", f"{clima['vento'] or 0:.0f} km/h")
+
+        r2 = st.columns(4)
+        r2[0].metric("🪴 Umidade do solo (API)", f"{clima['umidade_solo_api'] or 0:.2f} m³/m³")
+        r2[1].metric("🌡️ Temp. do solo", f"{clima['temp_solo'] or 0:.1f}°C")
+        uv0 = (clima['uv_max'] or [0])[0]
+        et0_0 = (clima['et0'] or [0])[0]
+        r2[2].metric("☀️ UV máx (hoje)", f"{uv0:.1f}")
+        r2[3].metric("💦 ET0 (hoje)", f"{et0_0:.1f} mm")
 
         datas = clima.get('datas') or []
         if datas:
-            st.markdown("**Previsão dos próximos dias**")
-            for col, data, chuva, tmax, tmin in zip(
-                st.columns(len(datas)),
-                datas, clima['chuva_prevista'],
-                clima['temp_max'], clima['temp_min'],
-            ):
-                col.metric(data, f"{chuva:.1f} mm", f"{tmin:.0f}–{tmax:.0f}°C", delta_color="off")
+            st.markdown("**Previsão para 7 dias**")
+            linhas = []
+            for i, data in enumerate(datas):
+                e_dia, d_dia = fclima.descrever_tempo(clima['codigos_dia'][i])
+                linhas.append({
+                    'Dia':        f"{data[8:10]}/{data[5:7]}",
+                    'Tempo':      f"{e_dia} {d_dia}",
+                    'Mín–Máx':    f"{clima['temp_min'][i]:.0f}–{clima['temp_max'][i]:.0f}°C",
+                    'Chuva':      f"{clima['chuva_prevista'][i]:.1f} mm",
+                    'Prob. chuva': f"{clima['chuva_prob'][i] or 0:.0f}%",
+                    'ET0':        f"{clima['et0'][i]:.1f} mm",
+                    'UV':         f"{clima['uv_max'][i]:.1f}",
+                })
+            st.dataframe(pd.DataFrame(linhas), use_container_width=True, hide_index=True)
 
         nivel, msg = fclima.recomendar_irrigacao(clima, leitura_atual['umidade'])
         if nivel == 'irrigar':
