@@ -1,3 +1,4 @@
+import base64
 import io
 import sys
 from pathlib import Path
@@ -96,7 +97,11 @@ col_logo, col_titulo = st.columns([1, 4])
 with col_logo:
     logo_path = ROOT / 'assets' / 'logo-fiap.png'
     if logo_path.exists():
-        st.image(str(logo_path), width=120)
+        logo_b64 = base64.b64encode(logo_path.read_bytes()).decode()
+        st.markdown(
+            f'<img src="data:image/png;base64,{logo_b64}" width="130" alt="FIAP">',
+            unsafe_allow_html=True,
+        )
 with col_titulo:
     st.title("FarmTech Solutions — Sistema Integrado Fase 7")
     st.caption("Grupo AI4Success | Turma 1TIAOR | FIAP")
