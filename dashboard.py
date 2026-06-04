@@ -88,6 +88,24 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+def img_inline(src, width=None, caption=None):
+    """Renderiza imagem local (Path/str) ou PIL inline em base64 — evita o
+    endpoint de mídia do Streamlit, que falha com caminhos OneDrive/acentos."""
+    if isinstance(src, (str, Path)):
+        p = Path(src)
+        mime = "jpeg" if p.suffix.lower() in (".jpg", ".jpeg") else "png"
+        b64 = base64.b64encode(p.read_bytes()).decode()
+    else:
+        buf = io.BytesIO()
+        src.save(buf, format="PNG")
+        mime, b64 = "png", base64.b64encode(buf.getvalue()).decode()
+    estilo = f"width:{width}px" if width else "width:100%"
+    html = f'<img src="data:image/{mime};base64,{b64}" style="{estilo};border-radius:8px">'
+    if caption:
+        html += f'<div style="color:#4A5746;font-size:0.82rem;margin-top:4px">{caption}</div>'
+    st.markdown(html, unsafe_allow_html=True)
+
+
 CAMINHO_DADOS  = ROOT / 'data'   / 'dados_agricolas.csv'
 CAMINHO_MODELO = ROOT / 'models' / 'regressor_model.pkl'
 
@@ -305,6 +323,18 @@ with tab2:
         r2[2].metric("☀️ UV máx (hoje)", f"{uv0:.1f}")
         r2[3].metric("💦 ET0 (hoje)", f"{et0_0:.1f} mm")
 
+        vwc = clima['umidade_solo_api']
+        if vwc is not None:
+            sat_api = min(vwc / 0.45 * 100, 100)  # saturação estimada (porosidade ~0,45)
+            sensor = leitura_atual['umidade']
+            dif = abs(sat_api - sensor)
+            base = (f"🔗 **Integração Fase 1↔3** — sensor {sensor:.0f}% vs. solo da API "
+                    f"≈{sat_api:.0f}% (saturação estimada)")
+            if dif <= 15:
+                st.success(f"{base}: leituras **concordam**.")
+            else:
+                st.warning(f"{base}: **divergência de {dif:.0f} pp** — avaliar calibração do sensor.")
+
         datas = clima.get('datas') or []
         if datas:
             st.markdown("**Previsão para 7 dias**")
@@ -338,7 +368,7 @@ with tab2:
         graficos = sorted(saidas_r.glob('*.png')) if saidas_r.exists() else []
         if graficos:
             for g in graficos:
-                st.image(str(g), use_column_width=True)
+                img_inline(g)
             txt = saidas_r / 'estatisticas.txt'
             if txt.exists():
                 st.code(txt.read_text(encoding='utf-8'), language='text')
@@ -367,12 +397,21 @@ with tab3:
         col_b.metric("⚗️ pH (via LDR)",     f"{leitura_atual['ph']:.2f}")
         col_b.metric("🚿 Bomba",            "Ligada 💧" if leitura_atual['bomba_ativa'] else "Desligada")
 
-        npk_ok = lambda v: "🟢" if v else "🔴"
-        st.write(
-            f"**NPK** — N {npk_ok(leitura_atual['nivel_N'] > 80)} "
-            f"({leitura_atual['nivel_N']:.0f} ppm)  ·  "
-            f"P {npk_ok(leitura_atual['nivel_P'])}  ·  K {npk_ok(leitura_atual['nivel_K'])}"
-        )
+        st.markdown("**Nutrientes (NPK)**")
+        nutrientes = [
+            ("Nitrogênio (N)", leitura_atual['nivel_N'] > 80, f"{leitura_atual['nivel_N']:.0f} ppm"),
+            ("Fósforo (P)",    leitura_atual['nivel_P'],       "Adequado" if leitura_atual['nivel_P'] else "Baixo"),
+            ("Potássio (K)",   leitura_atual['nivel_K'],       "Adequado" if leitura_atual['nivel_K'] else "Baixo"),
+        ]
+        for col, (nome, ok, detalhe) in zip(st.columns(3), nutrientes):
+            cor = "#2E7D32" if ok else "#C0392B"
+            col.markdown(
+                f'<div style="border:1px solid #E2E8DA;border-left:4px solid {cor};'
+                f'border-radius:8px;padding:8px 12px;background:#fff">'
+                f'<div style="font-size:0.78rem;color:#4A5746">{nome}</div>'
+                f'<div style="font-weight:700;color:{cor}">{detalhe}</div></div>',
+                unsafe_allow_html=True,
+            )
 
         if st.button("💾 Registrar leitura no banco", use_container_width=True, type="primary"):
             f3.inserir_leitura(leitura_atual)
@@ -417,7 +456,7 @@ with tab3:
         st.markdown("**Últimas leituras**")
         df_bd = f3.consultar_ultimas(10)
         if not df_bd.empty:
-            st.dataframe(df_bd, use_container_width=True, hide_index=True)
+            st.dataframe(df_bd.drop(columns=['id']), use_container_width=True, hide_index=True)
         else:
             st.caption("Nenhuma leitura registrada ainda.")
 
@@ -503,16 +542,34 @@ with tab4:
                 st.caption("Todos os parâmetros estão dentro da faixa ideal — manter o manejo atual.")
 
         st.markdown("---")
+        entradas = {
+            'Umidade_Solo':           umidade,
+            'pH_Solo':                ph,
+            'Temperatura_Ambiente':   temp,
+            'Nivel_N':                nitrogenio,
+            'Historico_Irrigacao_mm': irrigacao_hist,
+        }
+        rotulos_x = {
+            'Umidade_Solo':           'Umidade do Solo (%)',
+            'pH_Solo':                'pH do Solo',
+            'Temperatura_Ambiente':   'Temperatura (°C)',
+            'Nivel_N':                'Nitrogênio (ppm)',
+            'Historico_Irrigacao_mm': 'Irrigação histórica (mm/sem)',
+        }
+        eixo_x = st.selectbox("Variável do eixo X do gráfico de dispersão",
+                              list(rotulos_x), format_func=lambda c: rotulos_x[c])
+
         fig, ax = plt.subplots(1, 2, figsize=(14, 5))
 
         corr_df = df[features_cols + ['Produtividade_Esperada']].corr()
         sns.heatmap(corr_df, annot=True, cmap='coolwarm', fmt=".2f", ax=ax[0])
         ax[0].set_title("Correlação entre variáveis")
 
-        ax[1].scatter(df['Umidade_Solo'], df['Produtividade_Esperada'], alpha=0.3, label='Histórico')
-        ax[1].scatter(umidade, previsao, color='red', s=200, marker='X', zorder=5, label='Sua simulação')
-        ax[1].axvspan(IDEAIS['Umidade_Solo'][0], IDEAIS['Umidade_Solo'][1], color='green', alpha=0.1, label='Faixa ideal')
-        ax[1].set_xlabel("Umidade do Solo (%)")
+        ax[1].scatter(df[eixo_x], df['Produtividade_Esperada'], alpha=0.3, label='Histórico')
+        ax[1].scatter(entradas[eixo_x], previsao, color='red', s=200, marker='X', zorder=5, label='Sua simulação')
+        if eixo_x in IDEAIS:
+            ax[1].axvspan(IDEAIS[eixo_x][0], IDEAIS[eixo_x][1], color='green', alpha=0.1, label='Faixa ideal')
+        ax[1].set_xlabel(rotulos_x[eixo_x])
         ax[1].set_ylabel("Produtividade (kg/ha)")
         ax[1].legend()
         ax[1].set_title("Sua posição vs. histórico")
@@ -570,7 +627,7 @@ with tab5:
 
         if img_bytes:
             img_pil = PILImage.open(io.BytesIO(img_bytes))
-            st.image(img_pil, caption="Imagem selecionada", use_column_width=True)
+            img_inline(img_pil, caption="Imagem selecionada")
 
     with col_resultado:
         if not img_bytes:
@@ -627,8 +684,8 @@ Continuidade da Fase 6: o mesmo pipeline de transfer learning com YOLO, agora ap
         res_png = metrics_dir / 'results.png'
         cm_png  = metrics_dir / 'confusion_matrix.png'
         if res_png.exists():
-            st.image(str(res_png), caption="Curvas de treino (histórico real)")
+            img_inline(res_png, caption="Curvas de treino (histórico real)")
         if cm_png.exists():
-            st.image(str(cm_png), caption="Matriz de confusão (validação)")
+            img_inline(cm_png, caption="Matriz de confusão (validação)")
         if not res_png.exists():
             st.caption("As métricas aparecerão aqui após rodar o treino.")
