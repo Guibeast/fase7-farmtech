@@ -44,7 +44,7 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 - <b>assets</b>: Contém arquivos relacionados a elementos não-estruturados, como a logomarca da FIAP utilizada neste README.
 
-- <b>data</b>: Armazena os dados do sistema — `dados_agricolas.csv` (dataset do modelo ML da Fase 4) e a pasta `fase6_amostras/` com imagens de teste para a visão computacional. Os arquivos `farmtech_dados.json` (culturas da Fase 1) e `farmtech.db` (banco SQLite da Fase 3) são gerados automaticamente em tempo de execução.
+- <b>data</b>: Armazena os dados do sistema — `dados_agricolas.csv` (dataset do modelo ML da Fase 4), `clima_cidades.csv` (snapshot meteorológico das cidades para a análise R) e a pasta `fase6_amostras/` com imagens de teste para a visão computacional. Os arquivos `farmtech_dados.json` (culturas da Fase 1) e `farmtech.db` (banco SQLite da Fase 3) são gerados automaticamente em tempo de execução.
 
 - <b>docs</b>: Contém o arquivo `requirements.txt` com as dependências do projeto, conforme o padrão adotado nas entregas anteriores.
 
@@ -52,9 +52,9 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 - <b>src</b>: Módulos Python de cada fase — `fase1_culturas.py`, `fase1_clima.py` (integração com a API meteorológica Open-Meteo), `fase2_iot.py`, `fase3_banco.py`, `fase6_visao.py` e `aws_alertas.py`.
 
-- <b>esp32</b>: Sketch `bomba_npk.ino` (Arduino/C++) da estação ESP32 da Fase 2 — leitura de DHT22, LDR e NPK com acionamento automático da bomba de irrigação.
+- <b>esp32</b>: Sketch `bomba_npk.ino` (Arduino/C++) da estação ESP32 das Fases 2/3 — leitura de DHT22, LDR e NPK com acionamento automático da bomba de irrigação, saída para o **Serial Plotter** e exibição das métricas críticas em **display LCD 16x2 I2C** (Fase 4).
 
-- <b>analise_r</b>: Script `analise_culturas.R` com a análise estatística da Fase 1 sobre o dataset agrícola (gera gráficos e estatísticas em `analise_r/saidas/`).
+- <b>analise_r</b>: Análises estatísticas da Fase 1 em R — `analise_culturas.R` (dataset agrícola) e `analise_clima.R` (dados meteorológicos da API). Geram gráficos e estatísticas em `analise_r/saidas/`.
 
 - <b>dashboard.py</b>: Ponto de entrada da interface gráfica. Execute com `streamlit run dashboard.py`.
 
@@ -121,20 +121,42 @@ O serviço de alertas AWS SNS (Fase 5) é acionável a partir da aba Visão Gera
 
 ## 📊 AWS SNS — Serviço de Alertas
 
-O serviço de mensageria foi configurado no AWS Learner Lab utilizando o Amazon SNS (Simple Notification Service). Alertas são disparados automaticamente pela dashboard quando:
+### Arquitetura da solução
 
-- Umidade do solo abaixo de 30% → ação: iniciar irrigação imediatamente
-- Temperatura acima de 38°C → ação: aumentar frequência de irrigação
-- pH fora da faixa 5,5–7,5 → ação: corrigir acidez/alcalinidade do solo
-- Visão computacional detecta praga ou doença → ação: isolar área e consultar agrônomo
+Aproveitando a infraestrutura AWS da Fase 5, implementamos um serviço de mensageria com o **Amazon SNS** (Simple Notification Service) integrado à dashboard:
 
-**Passos realizados no console AWS:**
-1. SNS → Create Topic → Standard → nome: `farmtech-alertas`
-2. Create Subscription → Protocol: Email → Endpoint: e-mail do grupo
-3. Confirmação da subscription no e-mail recebido
-4. Topic ARN copiado para `.streamlit/secrets.toml`
+```
+Sensores (Fase 1/3)  ┐
+Visão computacional  ├─► dashboard.py ─► src/aws_alertas.py (boto3) ─► Amazon SNS ─► E-mail dos funcionários
+(Fase 6)             ┘        (avalia thresholds e monta a ação corretiva)         (Topic: farmtech-alertas)
+```
 
-> Adicione aqui os prints do console AWS (tópico SNS, subscription confirmada e e-mail de alerta recebido).
+O módulo `src/aws_alertas.py` autentica via credenciais do Learner Lab (lidas de `.streamlit/secrets.toml`, fora do versionamento) e publica no tópico SNS. A mensagem inclui o tipo de alerta, a leitura que o disparou e a **ação corretiva** sugerida ao funcionário. O disparo acontece a partir da aba **Visão Geral** (alertas de sensor das Fases 1/3) e da aba **Fase 6** (alerta da análise visual).
+
+### Alertas e ações corretivas (definidas pelo grupo)
+
+| Origem | Condição | Ação corretiva enviada |
+|--------|----------|------------------------|
+| Sensor (Fase 1/3) | Umidade do solo < 30% | Iniciar irrigação imediatamente |
+| Sensor (Fase 1/3) | Temperatura > 38°C | Aumentar frequência de irrigação |
+| Sensor (Fase 1/3) | pH fora de 5,5–7,5 | Corrigir acidez/alcalinidade do solo |
+| Sensor (Fase 1/3) | Nitrogênio (N) baixo | Aplicar fertilizante nitrogenado |
+| Visão (Fase 6) | Praga ou doença detectada | Isolar área e consultar agrônomo |
+
+### Passos realizados no console AWS
+
+1. SNS → **Create Topic** → Standard → nome `farmtech-alertas`
+2. **Create Subscription** → Protocol: Email → Endpoint: e-mail do grupo
+3. Confirmação da subscription pelo link recebido no e-mail
+4. Topic ARN copiado para `.streamlit/secrets.toml` (chave `SNS_TOPIC_ARN`)
+
+### Prints da solução (AWS Console)
+
+> **[INSERIR PRINT 1]** — Tópico `farmtech-alertas` criado no Amazon SNS.
+>
+> **[INSERIR PRINT 2]** — Subscription de e-mail com status **Confirmed**.
+>
+> **[INSERIR PRINT 3]** — E-mail de alerta recebido pelo funcionário (com a ação corretiva).
 
 
 ## 🌦 API Meteorológica (Open-Meteo)
@@ -150,11 +172,15 @@ Implementação em `src/fase1_clima.py`.
 
 ## 📊 Análise Estatística em R
 
-A Fase 1 inclui uma análise estatística descritiva do dataset agrícola escrita em **R** (`analise_r/analise_culturas.R`, base R, sem pacotes externos). Gera resumo descritivo, média/mediana/desvio, matriz de correlação e três gráficos.
+A Fase 1 inclui **duas** análises estatísticas escritas em **R** (base R, sem pacotes externos):
+
+1. **Dataset agrícola** (`analise_r/analise_culturas.R`) — resumo descritivo, média/mediana/desvio, matriz de correlação, histograma da produtividade, boxplots e dispersão umidade × produtividade sobre `data/dados_agricolas.csv`.
+2. **Meteorologia** (`analise_r/analise_clima.R`) — análise estatística **sobre os dados meteorológicos reais** da API Open-Meteo (`data/clima_cidades.csv`, snapshot das 18 cidades agrícolas): correlação entre temperatura, umidade, evapotranspiração (ET0), UV e vento, com gráficos de ET0 por cidade e temperatura × ET0.
 
 **Como executar:**
 ```bash
 Rscript analise_r/analise_culturas.R
+Rscript analise_r/analise_clima.R
 ```
 As saídas são gravadas em `analise_r/saidas/` e exibidas no dashboard (aba Fase 1, expander "Análise Estatística em R").
 

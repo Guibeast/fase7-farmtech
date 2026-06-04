@@ -9,6 +9,9 @@
  *   - Botoes : presenca de fosforo (P) e potassio (K)
  * Atuador:
  *   - Rele   : bomba de irrigacao
+ * Display (Fase 4):
+ *   - LCD 16x2 I2C : metricas criticas em tempo real
+ *   - Serial Plotter: series temporais via Serial (115200 baud)
  *
  * Logica da bomba (identica a src/fase2_iot.py -> deve_ligar_bomba):
  *   liga se umidade < 40%  OU  (N < 80 ppm E pH fora da faixa 5.5-7.5)
@@ -16,6 +19,8 @@
  * O dashboard Streamlit da Fase 7 simula esta mesma logica em Python.
  */
 #include <DHT.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
 #define DHTPIN    4
 #define DHTTYPE   DHT22
@@ -32,6 +37,7 @@ const float UMIDADE_MIN = 40.0;
 const float N_MIN       = 80.0;
 
 DHT dht(DHTPIN, DHTTYPE);
+LiquidCrystal_I2C lcd(0x27, 16, 2);   // endereco I2C tipico do modulo PCF8574
 
 void setup() {
   Serial.begin(115200);
@@ -40,6 +46,14 @@ void setup() {
   pinMode(BTN_K_PIN, INPUT_PULLUP);
   pinMode(RELE_PIN, OUTPUT);
   digitalWrite(RELE_PIN, LOW);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("FarmTech Fase 7");
+  lcd.setCursor(0, 1);
+  lcd.print("Iniciando...");
+  delay(1500);
 }
 
 float lerPh() {
@@ -75,6 +89,15 @@ void loop() {
 
   bool bomba = deveLigarBomba(umidade, ph, nivelN);
   digitalWrite(RELE_PIN, bomba ? HIGH : LOW);
+
+  // LCD 16x2 - metricas criticas em tempo real (Fase 4)
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("U:");   lcd.print(umidade, 0);
+  lcd.print("% pH:"); lcd.print(ph, 1);
+  lcd.setCursor(0, 1);
+  lcd.print("T:");   lcd.print(temperatura, 0);
+  lcd.print("C Bomba:"); lcd.print(bomba ? "ON" : "off");
 
   // Formato amigavel ao Serial Plotter
   Serial.print("Umidade:");     Serial.print(umidade);

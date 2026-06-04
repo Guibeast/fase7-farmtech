@@ -362,18 +362,37 @@ with tab2:
 
     st.markdown("---")
     with st.expander("📊 Análise Estatística em R (Fase 1)"):
-        st.caption("Estatística descritiva e correlações geradas pelo script "
-                   "`analise_r/analise_culturas.R` sobre o dataset agrícola.")
         saidas_r = ROOT / 'analise_r' / 'saidas'
-        graficos = sorted(saidas_r.glob('*.png')) if saidas_r.exists() else []
-        if graficos:
-            for g in graficos:
-                img_inline(g)
-            txt = saidas_r / 'estatisticas.txt'
-            if txt.exists():
-                st.code(txt.read_text(encoding='utf-8'), language='text')
-        else:
-            st.caption("Rode `Rscript analise_r/analise_culturas.R` para gerar os gráficos e estatísticas.")
+
+        def _bloco_r(titulo, descricao, pngs, txt_nome, script):
+            st.markdown(f"**{titulo}**")
+            st.caption(descricao)
+            graficos = [saidas_r / p for p in pngs if (saidas_r / p).exists()]
+            if graficos:
+                for g in graficos:
+                    img_inline(g)
+                txt = saidas_r / txt_nome
+                if txt.exists():
+                    st.code(txt.read_text(encoding='utf-8'), language='text')
+            else:
+                st.caption(f"Rode `Rscript {script}` para gerar os gráficos e estatísticas.")
+
+        _bloco_r(
+            "Dataset agrícola",
+            "Estatística descritiva e correlações sobre `data/dados_agricolas.csv` "
+            "(`analise_r/analise_culturas.R`).",
+            ['histograma_produtividade.png', 'boxplots_variaveis.png',
+             'dispersao_umidade_produtividade.png'],
+            'estatisticas.txt', 'analise_r/analise_culturas.R',
+        )
+        st.markdown("---")
+        _bloco_r(
+            "Meteorologia (API Open-Meteo)",
+            "Análise estatística sobre os dados meteorológicos reais das cidades "
+            "agrícolas (`analise_r/analise_clima.R` sobre `data/clima_cidades.csv`).",
+            ['clima_et0_por_cidade.png', 'clima_temp_vs_et0.png'],
+            'estatisticas_clima.txt', 'analise_r/analise_clima.R',
+        )
 
 # ═══════════════════════════════════════════════════════════════════════════
 # TAB 3 — FASE 2/3 SENSORES & BANCO

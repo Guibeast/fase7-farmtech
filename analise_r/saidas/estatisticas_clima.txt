@@ -1,0 +1,35 @@
+FarmTech - Analise Estatistica da Meteorologia (Fase 1)
+Fonte: API Open-Meteo | 18 cidades agricolas
+
+== Resumo descritivo ==
+  Temperatura      Umidade_Ar      Temp_Solo     Umidade_Solo_VWC
+ Min.   :19.00   Min.   :37.00   Min.   :18.30   Min.   :0.0320  
+ 1st Qu.:21.73   1st Qu.:43.25   1st Qu.:21.95   1st Qu.:0.1075  
+ Median :24.10   Median :48.50   Median :25.05   Median :0.1285  
+ Mean   :24.59   Mean   :51.17   Mean   :25.19   Mean   :0.1670  
+ 3rd Qu.:27.35   3rd Qu.:61.75   3rd Qu.:28.18   3rd Qu.:0.2652  
+ Max.   :31.00   Max.   :67.00   Max.   :32.90   Max.   :0.3540  
+    ET0_Hoje        Chuva_7d         UV_Hoje         Vento      
+ Min.   :2.290   Min.   : 0.000   Min.   :4.60   Min.   : 4.50  
+ 1st Qu.:2.915   1st Qu.: 0.000   1st Qu.:5.15   1st Qu.:10.30  
+ Median :3.655   Median : 1.850   Median :5.80   Median :11.50  
+ Mean   :3.646   Mean   : 8.622   Mean   :5.75   Mean   :12.33  
+ 3rd Qu.:4.200   3rd Qu.:13.375   3rd Qu.:6.25   3rd Qu.:13.97  
+ Max.   :4.890   Max.   :51.000   Max.   :6.80   Max.   :21.10  
+
+== Media / Mediana / Desvio-padrao ==
+                 Media Mediana Desvio
+Temperatura      24.59   24.10   3.59
+Umidade_Ar       51.17   48.50  10.22
+Temp_Solo        25.19   25.05   4.17
+Umidade_Solo_VWC  0.17    0.13   0.10
+ET0_Hoje          3.65    3.66   0.87
+Chuva_7d          8.62    1.85  13.18
+UV_Hoje           5.75    5.80   0.67
+Vento            12.33   11.50   4.07
+
+== Correlacao (ET0 x demais variaveis) ==
+     Temperatura       Umidade_Ar        Temp_Solo Umidade_Solo_VWC 
+           0.923           -0.808            0.933           -0.876 
+        ET0_Hoje         Chuva_7d          UV_Hoje            Vento 
+           1.000           -0.679            0.946            0.692 
