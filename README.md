@@ -11,15 +11,15 @@
 ## Grupo AI4Success - Turma 1TIAOR
 
 ## 👨‍🎓 Integrantes: 
-- Durval de Oliveira Dorta Junior - RM567007
-- Murilo Ferreira Borges - RM567738
-- Guilherme Cury - RM564011
-- Guilherme da Nobrega Gontijo - RM562211
-- Estevao Ferreira Santos - RM567522
+- <a href="https://www.linkedin.com/in/durval-dorta-junior-585311202/">Durval de Oliveira Dorta Junior - RM567007</a>
+- <a href="https://www.linkedin.com/">Murilo Ferreira Borges - RM567738</a>
+- <a href="https://www.linkedin.com/">Guilherme Cury - RM564011</a> 
+- <a href="https://www.linkedin.com/">Guilherme da Nobrega Gontijo - RM562211</a> 
+- <a href="https://www.linkedin.com/">Estevao Ferreira Santos - RM567522</
 
 ## 👩‍🏫 Professores:
 ### Tutor(a) 
-- Ana Cristina dos Santos
+- <a href="https://www.linkedin.com/">Ana Cristina dos Santos</a>
 ### Coordenador(a)
 - <a href="https://www.linkedin.com/in/andregodoi/">Andre Godoi Chiovato</a>
 
