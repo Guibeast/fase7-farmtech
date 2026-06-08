@@ -11,28 +11,28 @@
 ## Grupo AI4Success - Turma 1TIAOR
 
 ## 👨‍🎓 Integrantes: 
-- <a href="https://www.linkedin.com/in/durval-dorta-junior-585311202/">Durval de Oliveira Dorta Junior - RM567007</a>
-- <a href="https://www.linkedin.com/">Murilo Ferreira Borges - RM567738</a>
-- <a href="https://www.linkedin.com/">Guilherme Cury - RM564011</a> 
-- <a href="https://www.linkedin.com/">Guilherme da Nobrega Gontijo - RM562211</a> 
-- <a href="https://www.linkedin.com/">Estevao Ferreira Santos - RM567522</a>
+- Durval de Oliveira Dorta Junior - RM567007
+- Murilo Ferreira Borges - RM567738
+- Guilherme Cury - RM564011
+- Guilherme da Nobrega Gontijo - RM562211
+- Estevao Ferreira Santos - RM567522
 
 ## 👩‍🏫 Professores:
 ### Tutor(a) 
-- <a href="https://www.linkedin.com/">Ana Cristina dos Santos</a>
+- Ana Cristina dos Santos
 ### Coordenador(a)
 - <a href="https://www.linkedin.com/in/andregodoi/">Andre Godoi Chiovato</a>
 
 
 ## 📜 Descrição
 
-O projeto FarmTech Solutions — Fase 7 consolida em uma única dashboard Streamlit todas as entregas realizadas nas Fases 1 a 6 do PBL de Inteligência Artificial. O sistema integra o CRUD de culturas agrícolas (Fase 1), a simulação de sensores IoT ESP32 com DHT22, LDR e NPK (Fase 2), o banco de dados relacional com queries SQL (Fase 3), o modelo de Machine Learning Random Forest para predição de produtividade com R²=0.9703 (Fase 4), o serviço de alertas AWS SNS por e-mail e SMS (Fase 5) e a análise de saúde das plantações por visão computacional com YOLOv8-cls (Fase 6).
+O projeto FarmTech Solutions — Fase 7 consolida em uma única dashboard Streamlit todas as entregas realizadas nas Fases 1 a 6 do PBL de Inteligência Artificial. O sistema integra o CRUD de culturas agrícolas (Fase 1), a simulação de sensores IoT ESP32 com DHT22, LDR e NPK (Fase 2), o banco de dados relacional com queries SQL (Fase 3), o modelo de Machine Learning Random Forest para predição de produtividade com R²=0.9703 (Fase 4), o serviço de alertas AWS SNS por e-mail (Fase 5) e a análise de saúde das plantações por visão computacional com YOLOv8-cls (Fase 6).
 
 O serviço de mensageria AWS SNS dispara alertas automáticos com ações corretivas sempre que leituras de sensor ultrapassam os thresholds configurados ou quando a análise visual da Fase 6 detecta pragas ou deficiências nutricionais, notificando os funcionários da fazenda diretamente por e-mail.
 
 
 ## 🔗 Links Rápidos
-- **Repositório GitHub:** [Acessar Repositório](https://github.com/Guibeast/farmtech-fase7)
+- **Repositório GitHub:** [Acessar Repositório](https://github.com/Guibeast/fase7-farmtech)
 - **Vídeo Demonstrativo:** [Assistir no YouTube](INSERIR_LINK_YOUTUBE)
 
 
@@ -150,13 +150,23 @@ O módulo `src/aws_alertas.py` autentica via credenciais do Learner Lab (lidas d
 3. Confirmação da subscription pelo link recebido no e-mail
 4. Topic ARN copiado para `.streamlit/secrets.toml` (chave `SNS_TOPIC_ARN`)
 
-### Prints da solução (AWS Console)
+### Prints da solução
 
-> **[INSERIR PRINT 1]** — Tópico `farmtech-alertas` criado no Amazon SNS.
->
-> **[INSERIR PRINT 2]** — Subscription de e-mail com status **Confirmed**.
->
-> **[INSERIR PRINT 3]** — E-mail de alerta recebido pelo funcionário (com a ação corretiva).
+**1. Tópico `farmtech-alertas` criado no Amazon SNS** (console AWS, com o ARN usado pela aplicação):
+
+![Tópico SNS no console AWS](docs/prints/sns_01_topico.png)
+
+**2. Assinatura de e-mail com status `Confirmado`** — canal de entrega ativo, pronto para receber as notificações:
+
+![Subscription confirmada](docs/prints/sns_02_subscription.png)
+
+**3. Disparo pelo sistema** — botão *"Enviar estes alertas via AWS SNS"* na dashboard publicando os alertas de sensor (umidade baixa e pH alto) no tópico:
+
+![Dashboard disparando os alertas](docs/prints/sns_03_dashboard.png)
+
+**4. E-mail recebido pelo funcionário** — notificação entregue pelo SNS com a leitura que disparou o alerta e a **ação corretiva** sugerida:
+
+![E-mail de alerta recebido](docs/prints/sns_04_email.png)
 
 
 ## 🌦 API Meteorológica (Open-Meteo)
@@ -220,20 +230,10 @@ erDiagram
 
 ## 🗃 Histórico de lançamentos
 
-* 1.0.0 - 02/06/2026
-    * Entrega da Fase 7: consolidação completa das Fases 1 a 6 em dashboard única com alertas AWS SNS.
-* 0.6.0 - 27/04/2026
-    * Fase 6: Visão Computacional com YOLOv8-cls (transfer learning) classificando doenças e pragas em folha de café.
-* 0.5.0 - 2025
-    * Fase 5: Cloud AWS, análise comparativa de custos e predição de safra (crop yield).
-* 0.4.0 - 2025
-    * Fase 4: Dashboard Streamlit, modelo Random Forest, banco SQLite.
-* 0.3.0 - 2025
-    * Fase 3: Oracle SQL Developer, modelo relacional, queries de análise.
-* 0.2.0 - 2025
-    * Fase 2: ESP32 C++ com DHT22, LDR, botões NPK e relé de irrigação.
-* 0.1.0 - 2025
-    * Fase 1: Python CRUD de culturas, cálculo de área e insumos, integração API clima.
+* 1.1.0 - 08/06/2026
+    * Prints reais da solução de mensageria AWS SNS adicionados ao README e ajustes finais de documentação.
+* 1.0.0 - 04/06/2026
+    * Subida do sistema integrado da Fase 7: dashboard Streamlit consolidando as Fases 1 a 6, execução por terminal (`main.py`), serviço de alertas AWS SNS, análises em R e conformidade com o enunciado.
 
 
 ## 📋 Licença
