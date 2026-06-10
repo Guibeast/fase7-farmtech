@@ -15,7 +15,7 @@
 - <a href="https://www.linkedin.com/">Murilo Ferreira Borges - RM567738</a>
 - <a href="https://www.linkedin.com/">Guilherme Cury - RM564011</a> 
 - <a href="https://www.linkedin.com/">Guilherme da Nobrega Gontijo - RM562211</a> 
-- <a href="https://www.linkedin.com/">Estevao Ferreira Santos - RM567522</
+- <a href="https://www.linkedin.com/">Estevao Ferreira Santos - RM567522</a>
 
 ## 👩‍🏫 Professores:
 ### Tutor(a) 
