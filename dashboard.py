@@ -214,7 +214,10 @@ with tab1:
                 f"pH={leitura_atual['ph']:.2f}, Umidade={leitura_atual['umidade']:.1f}%",
                 "Verificar condições da lavoura",
             )
-            st.success(msg) if ok else st.error(msg)
+            if ok:
+                st.success(msg)
+            else:
+                st.error(msg)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # TAB 2 — FASE 1 CULTURAS
@@ -688,7 +691,10 @@ with tab5:
                             f"Classe: {resultado['classe']} (confiança {resultado['confianca']*100:.1f}%)",
                             resultado['acao_recomendada'],
                         )
-                        st.success(msg_aws) if ok else st.error(msg_aws)
+                        if ok:
+                            st.success(msg_aws)
+                        else:
+                            st.error(msg_aws)
 
     st.markdown("---")
     with st.expander("🔧 Por baixo dos panos — modelo e treino"):
