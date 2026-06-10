@@ -33,7 +33,7 @@ O serviço de mensageria AWS SNS dispara alertas automáticos com ações corret
 
 ## 🔗 Links Rápidos
 - **Repositório GitHub:** [Acessar Repositório](https://github.com/Guibeast/fase7-farmtech)
-- **Vídeo Demonstrativo:** [Assistir no YouTube](INSERIR_LINK_YOUTUBE)
+- **Vídeo Demonstrativo:** [Assistir no YouTube](https://youtu.be/2iFzcheBtT0)
 
 
 ## 📁 Estrutura de pastas
